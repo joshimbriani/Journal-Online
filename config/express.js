@@ -8,6 +8,9 @@ var bodyParser = require('body-parser');
 var compress = require('compression');
 var methodOverride = require('method-override');
 var exphbs  = require('express-handlebars');
+var session = require('express-session');
+var passport = require('passport');
+var passportLocal = require('passport-local');
 
 module.exports = function(app, config) {
   var env = process.env.NODE_ENV || 'development';
@@ -30,6 +33,7 @@ module.exports = function(app, config) {
   }));
   app.use(cookieParser());
   app.use(compress());
+  app.use(session({secret: 'This is the best secret that ever did exist'}));
   app.use(express.static(config.root + '/public'));
   app.use(methodOverride());
 
