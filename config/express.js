@@ -10,7 +10,8 @@ var methodOverride = require('method-override');
 var exphbs  = require('express-handlebars');
 var session = require('express-session');
 var passport = require('passport');
-var passportLocal = require('passport-local');
+var passportLocal = require('passport-local').Strategy;
+var db = require('../app/models');
 
 module.exports = function(app, config) {
   var env = process.env.NODE_ENV || 'development';
@@ -34,6 +35,42 @@ module.exports = function(app, config) {
   app.use(cookieParser());
   app.use(compress());
   app.use(session({secret: 'This is the best secret that ever did exist'}));
+  
+  passport.use(new passportLocal({
+      username: 'username',
+      password: 'password'
+    },
+  
+    function(username, password, done) {
+      var User = db.User;
+
+      User.findOne({username: username}).success(function(user) {
+        if (!user) {
+          done(false, null, {message: "Can't find a user with that name."});
+        }
+        if (user.password !== password) {
+          done(false, null, {message: "The passwords don't match."});
+        }
+
+        return done(null, { username: user.username});
+      });
+    }
+  ));
+
+  passport.validPassword = function(password){
+    return this.password === password;
+  }
+
+  passport.serializeUser = function(user, done){
+    done(null, user);
+  };
+
+  passport.deserializeUser = function(obj, done){
+    done(null, obj);
+  };
+  
+  app.use(passport.initialize());
+  app.use(passport.session());
   app.use(express.static(config.root + '/public'));
   app.use(methodOverride());
 
@@ -68,4 +105,5 @@ module.exports = function(app, config) {
       });
   });
 
+   
 };
