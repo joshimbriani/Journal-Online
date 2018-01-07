@@ -5,8 +5,8 @@ module.exports = function (sequelize, DataTypes) {
     password: DataTypes.STRING
   }, {
       classMethods: {
-        test: function (models) {
-
+        associate: function (models) {
+          User.hasMany(models.Entry, {foreignKey: 'entry_id'});
         }
       }
   });
